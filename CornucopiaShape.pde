@@ -1,11 +1,18 @@
+/*
+ * CornucopiaShape
+ * Author: Lorenzo Pasqualis
+ */
+ 
 class CornucopiaShape {
 
   PVector[][] m_cp;
   PVector[][] m_cp_rot;
+  PShape m_shape;
 
   CornucopiaShape() {
-    m_cp=null;
-    m_cp_rot=null;
+    m_cp        = null;
+    m_cp_rot    = null;
+    m_shape     = null;
   }
   
   void generate(float z1, float z2, 
@@ -15,39 +22,71 @@ class CornucopiaShape {
                 int inc_rows, 
                 int points_n) {
 
-    m_cp=cornucopiaPoints(z1,z2, 
-                          small_r1, large_r1, small_r2, large_r2, 
-                          theta1, theta2, 
-                          inc_rows, 
-                          points_n);
-    m_cp_rot=m_cp;
+    m_cp = cornucopiaPoints(z1,z2, 
+                           small_r1, large_r1, small_r2, large_r2, 
+                           theta1, theta2, 
+                           inc_rows, 
+                           points_n);
+    m_cp_rot = m_cp;
+    m_shape  = null;
   }
   
-  void rotate() {
+  void rotate(float fx, float fy, float fz) {
     m_cp_rot = new PVector[m_cp.length][];
-    for (int r=0;r<m_cp.length;i++) {
-      PVector ret[] = m_cp[r];
-      m_cp_rot[r] = new PVector[ret.length];
-      for (int i=ret.length-1; i>=0; i--) {
-        m_cp_rot[r][i] = vectorRotate3D(ret[i], 
-          cos(radians((ret[i].z))), 
-          sin(radians((ret[i].z))), 
-          0);
+    for (int r=0 ; r<m_cp.length ; r++) {
+      m_cp_rot[r] = new PVector[m_cp[r].length];
+      for (int i=0; i<m_cp[r].length; i++) {
+        m_cp_rot[r][i] = vectorRotate3D(m_cp[r][i], 
+            cos(radians((m_cp[r][i].z)))*fx, 
+            sin(radians((m_cp[r][i].z)))*fy, 
+            cos(radians((m_cp[r][i].z)))*fz);
       }  
     }
+    m_shape=null;
   }
   
   void clearRotation() {
-    m_cp_rot=m_cp;
+    m_cp_rot = m_cp;
+    m_shape  = null;
   }
 
+  void draw() {
+    if (m_shape==null) createTheShape();
+    shape(m_shape);
+  }
+  
+  
+  void createTheShape() {
+    int rows   = m_cp_rot.length;
+    int points = m_cp_rot[0].length;
+    
+    fill(191, 166, 119);
+    m_shape=createShape();
+    m_shape.beginShape(QUADS);
+  
+    for(int i=1 ; i<rows ; i++) {
+      PVector[] row0=m_cp_rot[i-1];
+      PVector[] row1=m_cp_rot[i];
+      if(row1==null) break;
+      for (int n=1 ; n<points ; n++) {
+        m_shape.vertex(row0[n-1].x, row0[n-1].y, row0[n-1].z);
+        m_shape.vertex(row0[n].x,   row0[n].y,   row0[n].z);
+        m_shape.vertex(row1[n].x,   row1[n].y,   row1[n].z);
+        m_shape.vertex(row1[n-1].x, row1[n-1].y, row1[n-1].z);
+      }
+    }
+    m_shape.endShape(CLOSE);
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////
+  
   PVector[][] cornucopiaPoints(float z1, float z2, 
                                float small_r1, float large_r1, 
                                float small_r2, float large_r2, 
                                float theta1, float theta2, 
                                int inc_rows, 
                                int points_n) {
-    int rows = (int)((z2-z1)/inc_rows)+1;
+    int rows = (int)((z2-z1)/inc_rows);
     PVector[][] ret = new PVector[rows][];
     int idx=0;
 
@@ -58,13 +97,6 @@ class CornucopiaShape {
 
     for (float z=z1; z<z2; z+=inc_rows) {
       ret[idx]=spiralPoints(z, small_r, large_r, theta1, theta2, points_n);
-      //for (int i=ret[idx].length-1; i>=0; i--) {
-      //  ret[idx][i]=vectorRotate3D(ret[idx][i], 
-      //    cos(radians((z))), 
-      //    sin(radians((z))), 
-      //    0);
-      //}
-
       small_r += small_incr;
       large_r += large_incr;
       idx+=1;
