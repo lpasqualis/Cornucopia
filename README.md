@@ -1,7 +1,7 @@
 # Cornucopia
 
 * Author: Lorenzo Pasqualis
-* Blog: http://www.coddrhood.com
+* Blog: [https://www.coderhood.com](https://www.coderhood.com)
 * Twitter: [@lpasqualis](http://www.twitter.com/lpasqualis)
 
 License: MIT
